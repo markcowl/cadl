@@ -110,7 +110,9 @@ export async function createProgram(
   program.checker.checkProgram();
 
   for (const cb of buildCbs) {
-    await cb(program);
+    try {
+      await cb(program);
+    } catch {}
   }
 
   return program;
