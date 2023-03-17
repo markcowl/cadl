@@ -17,13 +17,21 @@ export interface ProjectedNameView {
  * @param target Name of the projected name target(e.g. json, csharp, etc.)
  * @returns ProjectedNameView
  */
-export function createProjectedNameProgram(program: Program, target: string): ProjectedNameView {
-  const projectedProgram = projectProgram(program, [
-    {
-      projectionName: "target",
-      arguments: [target],
-    },
-  ]);
+export function createProjectedNameProgram(
+  program: Program,
+  target: string,
+  startNode?: Type
+): ProjectedNameView {
+  const projectedProgram = projectProgram(
+    program,
+    [
+      {
+        projectionName: "target",
+        arguments: [target],
+      },
+    ],
+    startNode
+  );
 
   return {
     program: projectedProgram,
