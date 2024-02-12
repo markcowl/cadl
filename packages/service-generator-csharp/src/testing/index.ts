@@ -1,20 +1,10 @@
-import { resolvePath } from "@typespec/compiler";
-import { TypeSpecTestLibrary } from "@typespec/compiler/testing";
-import { fileURLToPath } from "url";
+import {
+  TypeSpecTestLibrary,
+  createTestLibrary,
+  findTestPackageRoot,
+} from "@typespec/compiler/testing";
 
-export const CSharpServiceEmitterTestLibrary: TypeSpecTestLibrary = {
+export const CSharpServiceEmitterTestLibrary: TypeSpecTestLibrary = createTestLibrary({
   name: "@typespec/service-generator-csharp",
-  packageRoot: resolvePath(fileURLToPath(import.meta.url), "../../../../"),
-  files: [
-    {
-      realDir: "",
-      pattern: "package.json",
-      virtualPath: "./node_modules/@typespec/service-generator-csharp",
-    },
-    {
-      realDir: "dist/src",
-      pattern: "*.js",
-      virtualPath: "./node_modules/@typespec/service-generator-csharp/dist/src",
-    },
-  ],
-};
+  packageRoot: await findTestPackageRoot(import.meta.url),
+});

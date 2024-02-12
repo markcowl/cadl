@@ -19,7 +19,7 @@ const EmitterOptionsSchema: JSONSchemaType<CSharpServiceEmitterOptions> = {
   required: [],
 };
 
-export const $lib = createTypeSpecLibrary({
+export const libDef = {
   name: "@typespec/service-generator-csharp",
   diagnostics: {
     "invalid-identifier": {
@@ -51,5 +51,9 @@ export const $lib = createTypeSpecLibrary({
     options: EmitterOptionsSchema as JSONSchemaType<CSharpServiceEmitterOptions>,
   },
   requireImports: [],
-} as const);
-export const { reportDiagnostic, getTracer } = $lib;
+} as const;
+
+export const $lib = createTypeSpecLibrary(libDef);
+export const { reportDiagnostic, createStateSymbol, getTracer } = $lib;
+
+export type CSharpServiceLibrary = typeof $lib;

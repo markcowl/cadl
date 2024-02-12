@@ -1,5 +1,6 @@
 import { BasicTestRunner } from "@typespec/compiler/testing";
 import assert from "assert";
+import { beforeEach, describe, it } from "vitest";
 import { createCSharpServiceEmitterTestRunner, getStandardService } from "./test-host.js";
 
 function getGeneratedFile(runner: BasicTestRunner, fileName: string): [string, string] {
@@ -347,97 +348,4 @@ describe("service-generator-csharp: core service generation", () => {
       ]
     );
   });
-
-  /* Removing azure-core specific test 
-  it("creates controllers for interface operations", async () => {
-    await compileAndValidateMultiple(
-      runner,
-      `
-@doc("The color of a widget.")
-enum WidgetColor {
-  @doc("Black")
-  Black,
-  @doc("White")
-  White,
-  @doc("Red")
-  Red,
-  @doc("Green")
-  Green,
-  @doc("Blue")
-  Blue,
-}
-
-@doc("A widget.")
-@resource("widgets")
-model Widget {
-  @key("widgetName")
-  @doc("The widget name.")
-  @visibility("read")
-  name: string;
-  @doc("The widget color.")
-  color: WidgetColor;
-  @doc("The ID of the widget's manufacturer.")
-  manufacturerId: string;
-  ...EtagProperty;
-}
-
-alias ServiceTraits = SupportsRepeatableRequests &
-  SupportsConditionalRequests &
-  SupportsClientRequestId;
-
-alias Operations = Azure.Core.ResourceOperations<ServiceTraits>;
-
-interface Widgets {
-  // Operation Status
-  @doc("Gets status of a Widget operation.")
-  getWidgetOperationStatus is Operations.GetResourceOperationStatus<Widget>;
-
-  // Widget Operations
-  @doc("Creates or updates a Widget asynchronously")
-  @pollingOperation(Widgets.getWidgetOperationStatus)
-  createOrUpdateWidget is Operations.LongRunningResourceCreateOrUpdate<Widget>;
-
-  @doc("Get a Widget")
-  getWidget is Operations.ResourceRead<Widget>;
-
-  @doc("Delete a Widget asynchronously.")
-  @pollingOperation(Widgets.getWidgetOperationStatus)
-  deleteWidget is Operations.LongRunningResourceDelete<Widget>;
-
-  @doc("List Widget resources")
-  listWidgets is Operations.ResourceList<
-    Widget,
-    ListQueryParametersTrait<StandardListQueryParameters & SelectQueryParameter>
-  >;
-}
-
-      `,
-      [
-        [
-          "Widget.cs",
-          [
-            "public partial class Widget",
-            `public string Name { get; set; }`,
-            `public WidgetColor? Color { get; set; }`,
-            `public string ManufacturerId { get; set; }`,
-          ],
-        ],
-        [
-          "WidgetControllerBase.cs",
-          [
-            `namespace Microsoft.Contoso.Service.Controllers`,
-            `public abstract partial class WidgetControllerBase: ControllerBase`,
-            `public async Task<IActionResult> ListWidgets()`,
-            `protected virtual Task<IActionResult> OnListWidgetsAsync()`,
-            `public async Task<IActionResult> CreateOrUpdateWidget(string widgetName, Widget body)`,
-            `protected virtual Task<IActionResult> OnCreateOrUpdateWidgetAsync(string widgetName, Widget body)`,
-            `public async Task<IActionResult> GetWidget(string widgetName)`,
-            `protected virtual Task<IActionResult> OnGetWidgetAsync(string widgetName)`,
-            `public async Task<IActionResult> DeleteWidget(string widgetName)`,
-            `protected virtual Task<IActionResult> OnDeleteWidgetAsync(string widgetName)`,
-          ],
-        ],
-      ]
-    );
-  });*/
 });

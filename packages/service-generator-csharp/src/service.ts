@@ -68,7 +68,6 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
   const NoResourceContext: string = "RPCOperations";
 
   class CSharpCodeEmitter extends CodeTypeEmitter {
-    #names: string[] = [];
     #licenseHeader = `// Copyright (c) Microsoft Corporation. All rights reserved.
     // Licensed under the MIT License.`;
     #sourceTypeKey: string = "sourceType";
@@ -391,7 +390,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
           !isErrorModel(this.emitter.getProgram(), r.type) &&
           r.type.instantiationParameters === undefined &&
           (r.type.kind !== "Model" || r.type.templateMapper !== undefined) &&
-          getCSharpStatusCode(r.statusCode) !== undefined
+          getCSharpStatusCode(r.statusCodes) !== undefined
       );
       for (const response of validResponses) {
         i++;
@@ -408,7 +407,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
       const responseType = this.#metaInfo.getEffectivePayloadType(response.type, Visibility.Read);
       return this.emitter.result.rawCode(
         code`[ProducesResponseType((int)${getCSharpStatusCode(
-          response.statusCode
+          response.statusCodes
         )!}, Type = typeof(${this.#emitResponseType(responseType)}))]`
       );
     }

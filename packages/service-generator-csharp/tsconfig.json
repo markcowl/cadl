@@ -1,13 +1,15 @@
 {
-  "extends": "../tsconfig.json",
-  "composite": true,
-  "references": [{ "path": "../compiler/tsconfig.json" }, { "path": "../rest/tsconfig.json" }],
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    { "path": "../compiler/tsconfig.json" },
+    { "path": "../rest/tsconfig.json" },
+    { "path": "../http/tsconfig.json" },
+  ],
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": ".",
     "tsBuildInfoFile": "temp/tsconfig.tsbuildinfo",
-    "types": ["node", "mocha"]
+    "lib": ["DOM", "ESNext"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["dist", "node_modules", "temp", "input", "output"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

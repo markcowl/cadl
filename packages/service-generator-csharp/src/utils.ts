@@ -1,6 +1,6 @@
 import { IntrinsicScalarName, Model, NoTarget, Program, Scalar, Type } from "@typespec/compiler";
 import { StringBuilder } from "@typespec/compiler/emitter-framework";
-import { HttpOperation, StatusCode, isMetadata } from "@typespec/http";
+import { HttpOperation, HttpStatusCodesEntry, isMetadata } from "@typespec/http";
 import { camelCase, pascalCase } from "change-case";
 import { CSharpType, NameCasingType } from "./interfaces.js";
 import { reportDiagnostic } from "./lib.js";
@@ -374,15 +374,15 @@ export function getValidChar(target: string, position: number): string {
   return target;
 }
 
-export function getCSharpStatusCode(code: StatusCode): string | undefined {
-  switch (code) {
-    case "200":
+export function getCSharpStatusCode(entry: HttpStatusCodesEntry): string | undefined {
+  switch (entry) {
+    case 200:
       return "HttpStatusCode.OK";
-    case "201":
+    case 201:
       return "HttpStatusCode.Created";
-    case "202":
+    case 202:
       return "HttpStatusCode.Accepted";
-    case "204":
+    case 204:
       return "HttpStatusCode.NoContent";
     default:
       return undefined;
