@@ -18,6 +18,9 @@ import {
   getNamespaceFullName,
   getService,
   isErrorModel,
+  isNeverType,
+  isNullType,
+  isVoidType,
 } from "@typespec/compiler";
 import {
   CodeTypeEmitter,
@@ -278,7 +281,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     modelProperties(model: Model): EmitterOutput<string> {
       const result: StringBuilder = new StringBuilder();
       for (const [_, prop] of model.properties) {
-        if (prop.type.kind !== "Intrinsic" || prop.type.name !== "never")
+        if (!isVoidType(prop.type) && !isNeverType(prop.type) && !isNullType(prop.type))
           result.push(code`${this.emitter.emitModelProperty(prop)}`);
       }
 
