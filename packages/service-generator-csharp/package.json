@@ -55,20 +55,20 @@
     "!dist/test/**"
   ],
   "peerDependencies": {
-    "@typespec/compiler": "workspace:~0.53.0",
-    "@typespec/rest": "workspace:~0.53.0",
-    "@typespec/http": "workspace:~0.53.0",
-    "@typespec/versioning": "workspace:~0.53.0"
+    "@typespec/compiler": "workspace:~",
+    "@typespec/rest": "workspace:~",
+    "@typespec/http": "workspace:~",
+    "@typespec/versioning": "workspace:~"
   },
   "dependencies": {
-    "change-case": "~4.1.2"
+    "change-case": "~5.4.2"
   },
   "devDependencies": {
     "@typespec/compiler": "workspace:~",
     "@typespec/openapi": "workspace:~",
     "@typespec/rest": "workspace:~",
     "@typespec/http": "workspace:~",
-    "@types/node": "~18.11.9",
+    "@types/node": "~18.11.19",
     "@typespec/eslint-config-typespec": "workspace:~",
     "@typespec/library-linter": "workspace:~",
     "@typespec/eslint-plugin": "workspace:~",
