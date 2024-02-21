@@ -53,6 +53,7 @@ import {
 } from "./boilerplate.js";
 import { CSharpSourceType, CSharpType, ControllerContext, NameCasingType } from "./interfaces.js";
 import { CSharpServiceEmitterOptions } from "./lib.js";
+import { getRecordType, getUnknownType } from "./type-helpers.js";
 import {
   ensureCSharpIdentifier,
   ensureCleanDirectory,
@@ -264,18 +265,13 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     }
 
     modelInstantiation(model: Model, name: string): EmitterOutput<string> {
-      if (this.emitter.getProgram().checker.isStdType(model, "Record")) {
-        //const indexerValue = model.indexer!.value;
-        return code`Dictionary<string, object>`;
+      const program = this.emitter.getProgram();
+      const recordType = getRecordType(program, model);
+      if (recordType !== undefined) {
+        return code`Dictionary<string, ${this.emitter.emitTypeReference(recordType)}>`;
       }
-      switch (model.name ?? name) {
-        case "AcceptedResponse":
-        case "OperationStatus":
-        case "ResourceOperationStatus":
-          return code`${model.name ?? name}`;
-        default:
-          return code`object`;
-      }
+
+      return code`${this.emitter.emitTypeReference(getUnknownType(program))}`;
     }
 
     modelProperties(model: Model): EmitterOutput<string> {
@@ -531,7 +527,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
         ? code`${this.emitter.emitType(parameter.default)}`
         : emittedDefault;
       return this.emitter.result.rawCode(
-        code`${emittedType} ${emittedName}${defaultValue === undefined ? "" : ` = ${defaultValue}`}`
+        code`${httpParam.type !== "path" ? this.#emitParameterAttribute(httpParam) : ""}${emittedType} ${emittedName}${defaultValue === undefined ? "" : ` = ${defaultValue}`}`
       );
     }
 
@@ -542,7 +538,11 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
       const pathParameters = operation.parameters.parameters.filter((p) => p.type === "path");
       for (const parameter of pathParameters) {
         i++;
-        if (parameter.param.type.kind !== "Intrinsic" || parameter.param.type.name !== "never") {
+        if (
+          !isNeverType(parameter.param.type) &&
+          !isNullType(parameter.param.type) &&
+          !isVoidType(parameter.param.type)
+        ) {
           signature.push(
             code`${this.#emitOperationCallParameter(operation, parameter)}${
               i < pathParameters.length || bodyParam !== undefined ? ", " : ""

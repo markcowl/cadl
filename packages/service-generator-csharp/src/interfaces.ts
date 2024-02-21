@@ -1,7 +1,7 @@
 import { Model } from "@typespec/compiler";
 import { Context, Scope, SourceFile } from "@typespec/compiler/emitter-framework";
 
-export const HelperNamespace: string = "Microsoft.TypeSpec.ProviderHub.Controller";
+export const HelperNamespace: string = "Microsoft.TypeSpec.Service.Models";
 export class CSharpType {
   name: string;
   namespace: string;
