@@ -120,4 +120,6 @@ describe("service-generator-csharp: diagnostics", () => {
       },
     ]);
   });
+
+  it("Warns for unnamed model instantiations", async () => {});
 });

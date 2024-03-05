@@ -46,6 +46,12 @@ export const libDef = {
         default: paramMessage`Scalar type ${"typeName"} is not a recognized scalar type.  Please use or extend a built-in scalar type.`,
       },
     },
+    "invalid-intrinsic": {
+      severity: "error",
+      messages: {
+        default: paramMessage`Intrinsic type ${"typeName"} is not valid in this context.  Please use a model, enum, union, scalar, or the unknown type`,
+      },
+    },
   },
   emitter: {
     options: EmitterOptionsSchema as JSONSchemaType<CSharpServiceEmitterOptions>,

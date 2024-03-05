@@ -71,6 +71,14 @@ describe("service-generator-csharp: core service generation", () => {
       `
       /** A simple test model*/
       model Foo {
+        /** binary data */
+        bytesProp: bytes;
+
+        /** generic decimal data */
+        decimalProp: decimal;
+        /** decimal128 data */
+        decimal128Prop: decimal128;
+
         /** SByte */
         signedByteProp: int8;
         /** Byte */
@@ -87,6 +95,8 @@ describe("service-generator-csharp: core service generation", () => {
         uint32Prop: uint32;
         /** ulong */
         uint64Prop: uint64;
+        /** js safeint property */
+        safeIntProp: safeint;
         /** float */
         f32Prop: float32;
         /** double */
@@ -104,13 +114,18 @@ describe("service-generator-csharp: core service generation", () => {
         offsetDateTimeProp: offsetDateTime;
         /** TimeSpan */
         durationProp: duration;
+        /** unix timestamp data */
+        timestampProp: unixTimestamp32;
         /** string */
         stringProp: string;
+        /** resource locator prop */
+        urlProp: url;
       }
       `,
       "Foo.cs",
       [
         "public partial class Foo",
+        "public byte[] BytesProp { get; set; }",
         "public SByte? SignedByteProp { get; set; }",
         "public Byte? ByteProp { get; set; }",
         "public Int16? Int16Prop { get; set; }",
@@ -128,6 +143,11 @@ describe("service-generator-csharp: core service generation", () => {
         "public DateTimeOffset? UtcDateTimeProp { get; set; }",
         "public DateTimeOffset? OffsetDateTimeProp { get; set; }",
         "public string StringProp { get; set; }",
+        "public int? TimestampProp { get; set; }",
+        "public string UrlProp { get; set; }",
+        "public long? SafeIntProp { get; set; }",
+        "public decimal? DecimalProp { get; set; }",
+        "public decimal? Decimal128Prop { get; set; }",
       ]
     );
   });
@@ -148,6 +168,22 @@ describe("service-generator-csharp: core service generation", () => {
       `,
       "Foo.cs",
       ["public partial class Foo", `public string AdminPassword { get; set; }`]
+    );
+  });
+
+  it("handles scalar templates", async () => {
+    await compileAndValidateSingleModel(
+      runner,
+      `
+
+      /** A simple test model*/
+      model Foo {
+        /** string literal */
+        id: ResourceLocation<Foo>;
+      }
+      `,
+      "Foo.cs",
+      ["public partial class Foo", `public string Id { get; set; }`]
     );
   });
 
@@ -295,7 +331,7 @@ describe("service-generator-csharp: core service generation", () => {
             `public Baz BazProp { get; set; }`,
           ],
         ],
-        ["Bar.cs", ["public struct Bar"]],
+        ["Bar.cs", ["public enum Bar"]],
         [
           "Baz.cs",
           [
@@ -348,4 +384,49 @@ describe("service-generator-csharp: core service generation", () => {
       ]
     );
   });
+
+  it("Organizes controllers by interface", async () => {});
+  it("Generates types for named model instantiation", async () => {
+    await compileAndValidateSingleModel(
+      runner,
+      `
+       using TypeSpec.Rest.Resource;
+
+       model Toy {
+        @key("toyId")
+        id: int64;
+      
+        petId: int64;
+        name: string;
+      }
+
+       model ToyCollection is CollectionWithNextLink<Toy>;
+    `,
+      "ToyCollection.cs",
+      ["public partial class ToyCollection"]
+    );
+  });
+
+  it("Generates types for generic model instantiation", async () => {
+    await compileAndValidateSingleModel(
+      runner,
+      `
+       using TypeSpec.Rest.Resource;
+
+       model Toy {
+        @key("toyId")
+        id: int64;
+      
+        petId: int64;
+        name: string;
+      }
+
+       op foo(): CollectionWithNextLink<Toy>;
+    `,
+      "ToyCollectionWithNextLink.cs",
+      ["public partial class ToyCollectionWithNextLink"]
+    );
+  });
+  it("Generates appropriate response attributes for GET", async () => {});
+  it("Generates appropriate response attributes for List", async () => {});
 });

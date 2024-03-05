@@ -1,8 +1,17 @@
-import { IntrinsicScalarName, Model, NoTarget, Program, Scalar, Type } from "@typespec/compiler";
+import {
+  IntrinsicScalarName,
+  Model,
+  NoTarget,
+  Program,
+  Scalar,
+  Type,
+  getFriendlyName,
+} from "@typespec/compiler";
 import { StringBuilder } from "@typespec/compiler/emitter-framework";
 import { HttpOperation, HttpStatusCodesEntry, isMetadata } from "@typespec/http";
 import { camelCase, pascalCase } from "change-case";
-import { CSharpType, NameCasingType } from "./interfaces.js";
+import { getAttributes } from "./attributes.js";
+import { Attribute, CSharpType, NameCasingType } from "./interfaces.js";
 import { reportDiagnostic } from "./lib.js";
 
 export function getCSharpTypeForScalar(program: Program, scalar: Scalar): CSharpType {
@@ -26,12 +35,13 @@ export function getCSharpTypeForScalar(program: Program, scalar: Scalar): CSharp
   });
 }
 
+type ExtendedIntrinsicScalarName = IntrinsicScalarName | "unixTimestamp32";
 export function getCSharpTypeForStdScalars(
   program: Program,
-  scalar: Scalar & { name: IntrinsicScalarName }
+  scalar: Scalar & { name: ExtendedIntrinsicScalarName }
 ): CSharpType {
-  const standardScalars: Map<IntrinsicScalarName, CSharpType> = new Map<
-    IntrinsicScalarName,
+  const standardScalars: Map<ExtendedIntrinsicScalarName, CSharpType> = new Map<
+    ExtendedIntrinsicScalarName,
     CSharpType
   >([
     [
@@ -127,6 +137,10 @@ export function getCSharpTypeForStdScalars(
         isBuiltIn: true,
         isValueType: true,
       }),
+    ],
+    [
+      "unixTimestamp32",
+      new CSharpType({ name: "int", namespace: "System", isBuiltIn: true, isValueType: true }),
     ],
     [
       "plainTime",
@@ -319,6 +333,45 @@ export function ensureCSharpIdentifier(
   }
 
   return getCSharpIdentifier(name, context);
+}
+
+export function getModelAttributes(
+  program: Program,
+  entity: Type,
+  csharpName?: string
+): Attribute[] {
+  return getAttributes(program, entity);
+}
+
+export function getModelInstantiationName(program: Program, model: Model, name: string): string {
+  const friendlyName = getFriendlyName(program, model);
+  if (friendlyName.length > 0) return friendlyName;
+  if (name.length < 1) name = ensureCSharpIdentifier(program, model, name, NameCasingType.Class);
+  const names: string[] = [name];
+  if (model.templateMapper !== undefined) {
+    for (const paramType of model.templateMapper!.args) {
+      switch (paramType.kind) {
+        case "Enum":
+        case "EnumMember":
+        case "Model":
+        case "ModelProperty":
+        case "Namespace":
+        case "Scalar":
+        case "Union":
+          names.push(getCSharpIdentifier(paramType?.name ?? paramType.kind, NameCasingType.Class));
+          break;
+        default:
+          names.push(getCSharpIdentifier(paramType.kind, NameCasingType.Class));
+          break;
+      }
+    }
+  }
+
+  return ensureCSharpIdentifier(program, model, names.join(""), NameCasingType.Class);
+}
+
+export function getOperationAttributes(program: Program, entity: Type): Attribute[] {
+  return getAttributes(program, entity);
 }
 
 export function transformInvalidIdentifier(name: string): string {
