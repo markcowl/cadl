@@ -5,6 +5,8 @@ export interface CSharpServiceEmitterOptions {
   "skip-format"?: boolean;
   /** Choose which service artifacts to emit.  Default is 'all'.*/
   "output-type"?: "models" | "all";
+  /** Choose which type of ASP.Net service to create (Asp.Net Core MVC or Asp.Net Core Minimal Api) */
+  "code-type"?: "mvc" | "minimal";
 }
 
 const EmitterOptionsSchema: JSONSchemaType<CSharpServiceEmitterOptions> = {
@@ -24,6 +26,14 @@ const EmitterOptionsSchema: JSONSchemaType<CSharpServiceEmitterOptions> = {
       default: "all",
       description:
         "Chooses which service artifacts to emit. choices include 'models' or 'all' artifacts.",
+    },
+    "code-type": {
+      type: "string",
+      enum: ["mvc", "minimal"],
+      nullable: true,
+      default: "mvc",
+      description:
+        "Chooses which type of ASP.Net service to create (Asp.Net Core MVC or Asp.Net Core Minimal Api) ",
     },
   },
   required: [],

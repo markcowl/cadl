@@ -90,6 +90,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     #libraryFiles: LibrarySourceFile[] = getSerializationSourceFiles(this.emitter);
     #baseNamespace: string | undefined = undefined;
     #emitterOutputType = context.options["output-type"];
+    #serviceKind = context.options["code-type"];
 
     #metaInfo: MetadataInfo = createMetadataInfo(this.emitter.getProgram(), {
       canonicalVisibility: Visibility.Read,
@@ -393,7 +394,6 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
         "System.Text.Json.Serialization",
       ]);
       context.file.imports.set("System.Threading.Tasks", ["System.Threading.Tasks"]);
-      context.file.imports.set("Microsoft.AspNetCore.Mvc", ["Microsoft.AspNetCore.Mvc"]);
       context.file.imports.set(modelNamespace, [modelNamespace]);
       return context;
     }
