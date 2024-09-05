@@ -9,12 +9,12 @@ type NumericConstraint = {min?: number, max?: number, exclusiveMin?: boolean, ex
 type Visibility = "read" | "update" | "create" | "list" | "delete";
 type HttpMetadataPart: "path" | "query" | "header";
 type HttpProtocolInfo= { part: HttpMetadataPart, serializedName?: string};
-type MediaType = "application/json" | "multipart/form-data" | "text/plain" | "application/octent-stream" | string;
+type MediaType = "application/json" | "multipart/form-data" | "text/plain" | "application/octet-stream" | string;
 type Encoding = {propertyName?: string, encodingName?: string, wireType?: type, format?: string};
 type PropConstraint =  StringConstraint | NumericConstraint | ArrayConstraint;
 type StringConstraint = { length?: NumericConstraint, pattern?: string, secret?: boolean};
 type NumericConstraint = { value?: NumericConstraint};
-type ArrayConstraint = { count? NumericConstraint }
+type ArrayConstraint = { count?: NumericConstraint }
 ```
 
 ## Acquisition and Handling of Property Metadata
