@@ -13,8 +13,7 @@ type MediaType = "application/json" | "multipart/form-data" | "text/plain" | "ap
 type Encoding = {propertyName?: string, encodingName?: string, wireType?: type, format?: string};
 type PropConstraint =  StringConstraint | NumericConstraint | ArrayConstraint;
 type StringConstraint = { length?: NumericConstraint, pattern?: string, secret?: boolean};
-type NumericConstraint = { value?: NumericConstraint};
-type ArrayConstraint = { count?: NumericConstraint }
+type ArrayConstraint = { count?: NumericConstraint };
 ```
 
 ## Acquisition and Handling of Property Metadata
