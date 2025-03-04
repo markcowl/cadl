@@ -78,8 +78,8 @@ import {
   EmittedTypeInfo,
   HttpMetadata,
   UnknownType,
+  coalesceCSharpUnionTypes,
   coalesceTypes,
-  coalesceUnionTypes,
   ensureCSharpIdentifier,
   ensureCleanDirectory,
   formatComment,
@@ -136,7 +136,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     }
 
     unionLiteral(union: Union): EmitterOutput<string> {
-      const csType = coalesceUnionTypes(this.emitter.getProgram(), union);
+      const csType = coalesceCSharpUnionTypes(this.emitter.getProgram(), union);
       return this.emitter.result.rawCode(
         csType ? csType.getTypeReference(this.emitter.getContext()?.scope) : "object",
       );
@@ -786,7 +786,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     }
 
     unionDeclaration(union: Union, name: string): EmitterOutput<string> {
-      const baseType = coalesceUnionTypes(this.emitter.getProgram(), union);
+      const baseType = coalesceCSharpUnionTypes(this.emitter.getProgram(), union);
       if (baseType.isBuiltIn && baseType.name === "string") {
         const program = this.emitter.getProgram();
         const unionName = ensureCSharpIdentifier(program, union, name);
@@ -817,7 +817,7 @@ export async function $onEmit(context: EmitContext<CSharpServiceEmitterOptions>)
     }
 
     unionDeclarationContext(union: Union): Context {
-      const baseType = coalesceUnionTypes(this.emitter.getProgram(), union);
+      const baseType = coalesceCSharpUnionTypes(this.emitter.getProgram(), union);
       if (baseType.isBuiltIn && baseType.name === "string") {
         const unionName = ensureCSharpIdentifier(
           this.emitter.getProgram(),

@@ -220,6 +220,116 @@ it("generates standard scalar properties", async () => {
   );
 });
 
+it("generates nullable properties", async () => {
+  await compileAndValidateSingleModel(
+    runner,
+    `
+      /** A simple test model*/
+      model Included {
+        /** A string property */
+        prop1: string;
+      }
+      /** A test enum */
+      enum AlsoIncluded { One, Two};
+      /** Another test model */
+      model Foo {
+        /** binary data */
+        bytesProp: bytes | null;
+
+        /** generic decimal data */
+        decimalProp: decimal | null;
+        /** decimal128 data */
+        decimal128Prop: decimal128 | null;
+
+        /** SByte */
+        signedByteProp: int8 | null;
+        /** Byte */
+        byteProp: uint8 | null;
+        /** Int16 */
+        int16Prop: int16 | null;
+        /** int */
+        int32Prop: int32 | null;
+        /** long */
+        int64Prop: int64 | null;
+        /** Uint16 */
+        uint16Prop: uint16 | null;
+        /** Uint32 */
+        uint32Prop: uint32 | null;
+        /** ulong */
+        uint64Prop: uint64 | null;
+        /** js safeint property */
+        safeIntProp: safeint | null;
+        /** float */
+        f32Prop: float32 | null;
+        /** double */
+        f64Prop: float64 | null;
+        /** bool */
+        boolProp: boolean | null;
+        /** DateTime */
+        dateProp: plainDate | null;
+        /** DateTime */
+        timeProp: plainTime | null;
+        /** DateTimeOffset */
+        utcDateTimeProp: utcDateTime | null;
+        /** DateTimeOffset */
+        offsetDateTimeProp: offsetDateTime | null;
+        /** TimeSpan */
+        durationProp: duration | null;
+        /** unix timestamp data */
+        timestampProp: unixTimestamp32 | null;
+        /** string */
+        stringProp: string | null;
+        /** resource locator prop */
+        urlProp: url | null;
+        /** should coalesce to string type */
+        literalsOrNull: "one" | "two" | null;
+        /** should coalesce to string type */
+        manyNullsOneString: null | null | string | null;
+        /** should coalesce to object */
+        manyNullsSomeValues: null | 42 | null | 100 | null;
+        /** expect Included type */
+        modelOrNull: Included | null;
+        /** expect nullable enum */
+        enumOrNull: AlsoIncluded | null;
+      }
+      `,
+    "Foo.cs",
+    [
+      "public partial class Foo",
+      "public byte[] BytesProp { get; set; }",
+      "public SByte? SignedByteProp { get; set; }",
+      "public Byte? ByteProp { get; set; }",
+      "public Int16? Int16Prop { get; set; }",
+      "public int? Int32Prop { get; set; }",
+      "public long? Int64Prop { get; set; }",
+      "public UInt16? Uint16Prop { get; set; }",
+      "public UInt32? Uint32Prop { get; set; }",
+      "public UInt64? Uint64Prop { get; set; }",
+      "public float? F32Prop { get; set; }",
+      "public double? F64Prop { get; set; }",
+      "public bool? BoolProp { get; set; }",
+      "public DateTime? DateProp { get; set; }",
+      "public DateTime? TimeProp { get; set; }",
+      "[JsonConverter( typeof(TimeSpanDurationConverter))]",
+      "public TimeSpan? DurationProp { get; set; }",
+      "public DateTimeOffset? UtcDateTimeProp { get; set; }",
+      "public DateTimeOffset? OffsetDateTimeProp { get; set; }",
+      "public string StringProp { get; set; }",
+      "[JsonConverter( typeof(UnixEpochDateTimeOffsetConverter))]",
+      "public DateTimeOffset? TimestampProp { get; set; }",
+      "public string UrlProp { get; set; }",
+      "public long? SafeIntProp { get; set; }",
+      "public decimal? DecimalProp { get; set; }",
+      "public decimal? Decimal128Prop { get; set; }",
+      "public string LiteralsOrNull {get; set; }",
+      "public string ManyNullsOneString {get; set; }",
+      "public object ManyNullsSomeValues {get; set; }",
+      "public Included ModelOrNull {get; set; }",
+      "public AlsoIncluded? EnumOrNull {get; set; }",
+    ],
+  );
+});
+
 it("generates numeric constraints", async () => {
   await compileAndValidateSingleModel(
     runner,

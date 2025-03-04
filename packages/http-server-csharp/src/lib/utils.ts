@@ -1262,7 +1262,7 @@ export class CSharpOperationHelpers {
         return { typeReference: code`${type}`, defaultValue: `${value}`, nullableType: false };
       case "Tuple":
         const defaults = [];
-        const [csharpType, isObject] = coalesceTsTypes(program, tsType.values);
+        const [csharpType, isObject] = coalesceCSharpTypes(program, tsType.values);
         if (isObject)
           return { typeReference: "object[]", defaultValue: undefined, nullableType: false };
         for (const value of tsType.values) {
@@ -1363,8 +1363,8 @@ export function findNumericType(type: NumericLiteral): [string, string] {
   return ["int", stringValue];
 }
 
-export function coalesceUnionTypes(program: Program, union: Union): CSharpType {
-  const [result, _] = coalesceTsTypes(
+export function coalesceCSharpUnionTypes(program: Program, union: Union): CSharpType {
+  const [result, _] = coalesceCSharpTypes(
     program,
     [...union.variants.values()].flatMap((v) => v.type),
   );
@@ -1379,7 +1379,7 @@ export function getNonNullableTsType(union: Union): { type: Type; nullable: bool
   return undefined;
 }
 
-export function coalesceTsTypes(program: Program, types: Type[]): [CSharpType, boolean] {
+export function coalesceCSharpTypes(program: Program, types: Type[]): [CSharpType, boolean] {
   const defaultValue: [CSharpType, boolean] = [
     new CSharpType({
       name: "object",
@@ -1395,11 +1395,21 @@ export function coalesceTsTypes(program: Program, types: Type[]): [CSharpType, b
     let candidate: CSharpType | undefined = undefined;
     switch (type.kind) {
       case "Boolean":
-        candidate = new CSharpType({ name: "bool", namespace: "System", isValueType: true });
+        candidate = new CSharpType({
+          name: "bool",
+          namespace: "System",
+          isBuiltIn: true,
+          isValueType: true,
+        });
         break;
       case "StringTemplate":
       case "String":
-        candidate = new CSharpType({ name: "string", namespace: "System", isValueType: false });
+        candidate = new CSharpType({
+          name: "string",
+          namespace: "System",
+          isBuiltIn: true,
+          isValueType: false,
+        });
         break;
       case "Number":
         const stringValue = type.valueAsString;
@@ -1410,11 +1420,16 @@ export function coalesceTsTypes(program: Program, types: Type[]): [CSharpType, b
             isValueType: true,
           });
         } else {
-          candidate = new CSharpType({ name: "int", namespace: "System", isValueType: true });
+          candidate = new CSharpType({
+            name: "int",
+            namespace: "System",
+            isBuiltIn: true,
+            isValueType: true,
+          });
         }
         break;
       case "Union":
-        candidate = coalesceUnionTypes(program, type);
+        candidate = coalesceCSharpUnionTypes(program, type);
         break;
       case "Scalar":
         candidate = getCSharpTypeForScalar(program, type);
@@ -1436,7 +1451,7 @@ export function coalesceTsTypes(program: Program, types: Type[]): [CSharpType, b
       return defaultValue;
   }
 
-  if (current !== undefined && nullable === true) current.isNullable = true;
+  if (current !== undefined && nullable === true && current.isValueType) current.isNullable = true;
   return current === undefined ? defaultValue : [current, false];
 }
 

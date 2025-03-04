@@ -118,7 +118,7 @@ export function getEncodedNameAttribute(
  */
 export function getEncodingAttributes(program: Program, type: ModelProperty): Attribute[] {
   const result: Attribute[] = [];
-  const propertyType = getScalarType(program, type);
+  const propertyType = getScalarType(program, type.type, type);
   if (propertyType !== undefined) {
     switch (propertyType.scalar.name) {
       case "unixTimestamp32":
@@ -148,11 +148,15 @@ type WireEncoding = { name: string; wireType: Type };
 
 type ScalarWithEncoding = { scalar: Scalar; encoding?: WireEncoding };
 
-function getScalarType(program: Program, property: ModelProperty): ScalarWithEncoding | undefined {
-  if (property.type.kind !== "Scalar") return undefined;
-  let scalarType = property.type;
-  let encoding: WireEncoding | undefined =
-    getScalarEncoding(program, property) || getScalarEncoding(program, scalarType);
+function getScalarType(
+  program: Program,
+  scalarType: Type,
+  property?: ModelProperty,
+): ScalarWithEncoding | undefined {
+  if (scalarType.kind !== "Scalar") return undefined;
+  let encoding: WireEncoding | undefined = property
+    ? getScalarEncoding(program, property) || getScalarEncoding(program, scalarType)
+    : getScalarEncoding(program, scalarType);
   while (scalarType.baseScalar !== undefined) {
     scalarType = scalarType.baseScalar;
     if (encoding === undefined) {
