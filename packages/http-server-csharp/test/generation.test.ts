@@ -1117,22 +1117,28 @@ it("generates appropriate types for records", async () => {
       [
         "BarResponse.cs",
         [
+          "using System.Text.Json.Nodes;",
+          "namespace Microsoft.Contoso",
           "public partial class BarResponse",
-          "public System.Text.Json.Nodes.JsonObject RecordProp { get; set; }",
-          "public System.Text.Json.Nodes.JsonObject StringMap { get; set; }",
+          "public JsonObject RecordProp { get; set; }",
+          "public JsonObject StringMap { get; set; }",
         ],
       ],
       [
         "ContosoOperationsFooRequest.cs",
         [
+          "using System.Text.Json.Nodes;",
+          "namespace Microsoft.Contoso",
           "public partial class ContosoOperationsFooRequest",
-          "public System.Text.Json.Nodes.JsonObject RecordProp { get; set; }",
+          "public JsonObject RecordProp { get; set; }",
         ],
       ],
       [
         "ContosoOperationsController.cs",
         [
-          "[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(System.Text.Json.Nodes.JsonObject))]",
+          "using System.Text.Json.Nodes;",
+          "namespace Microsoft.Contoso.Controllers",
+          "[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(JsonObject))]",
           `public virtual async Task<IActionResult> Foo(ContosoOperationsFooRequest body)`,
           `public virtual async Task<IActionResult> Bar()`,
         ],
@@ -1140,7 +1146,9 @@ it("generates appropriate types for records", async () => {
       [
         "IContosoOperations.cs",
         [
-          `Task<System.Text.Json.Nodes.JsonObject> FooAsync( System.Text.Json.Nodes.JsonObject recordProp);`,
+          "using System.Text.Json.Nodes;",
+          "namespace Microsoft.Contoso",
+          `Task<JsonObject> FooAsync( JsonObject recordProp);`,
           `Task<BarResponse> BarAsync( );`,
         ],
       ],
@@ -1722,7 +1730,11 @@ it("Initializes enum types", async () => {
     [
       [
         "IContosoOperations.cs",
-        ["Task<Widget> CreateAsync( Widget body);", "Task<Color> GetDefaultColorAsync( );"],
+        [
+          "namespace Microsoft.Contoso",
+          "Task<Widget> CreateAsync( Widget body);",
+          "Task<Color> GetDefaultColorAsync( );",
+        ],
       ],
       [
         "ContosoOperations.cs",
@@ -1730,7 +1742,7 @@ it("Initializes enum types", async () => {
           "public class ContosoOperations : IContosoOperations",
           "public Task<Widget> CreateAsync( Widget body)",
           "public Task<Color> GetDefaultColorAsync( )",
-          "return Task.FromResult<Microsoft.Contoso.Service.Models.Color>(default);",
+          "return Task.FromResult<Color>(default);",
         ],
       ],
       [

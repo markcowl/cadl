@@ -1,4 +1,4 @@
-import { AssetEmitter, EmitterOutput, StringBuilder, code } from "@typespec/asset-emitter";
+import { AssetEmitter, EmitterOutput, Scope, StringBuilder, code } from "@typespec/asset-emitter";
 import {
   IntrinsicScalarName,
   IntrinsicType,
@@ -90,6 +90,15 @@ export const UnknownType: CSharpType = new CSharpType({
   namespace: "System.Text.Json.Nodes",
   isValueType: false,
   isBuiltIn: false,
+  isClass: true,
+});
+
+export const RecordType = new CSharpType({
+  name: "JsonObject",
+  namespace: "System.Text.Json.Nodes",
+  isBuiltIn: false,
+  isValueType: false,
+  isClass: true,
 });
 export function getCSharpType(
   program: Program,
@@ -139,7 +148,7 @@ export function getCSharpType(
       return {
         type: new CSharpType({
           name: ensureCSharpIdentifier(program, type, type.name, NameCasingType.Class),
-          namespace: namespace || "Models",
+          namespace: `${namespace}`,
           isBuiltIn: false,
           isValueType: false,
           isClass: true,
@@ -149,7 +158,7 @@ export function getCSharpType(
       return {
         type: new CSharpType({
           name: ensureCSharpIdentifier(program, type, type.name, NameCasingType.Class),
-          namespace: `${namespace}.Models`,
+          namespace: `${namespace}`,
           isBuiltIn: false,
           isValueType: true,
         }),
@@ -173,13 +182,7 @@ export function getCSharpType(
       }
       if (isRecord(type))
         return {
-          type: new CSharpType({
-            name: "JsonObject",
-            namespace: "System.Text.Json.Nodes",
-            isBuiltIn: false,
-            isValueType: false,
-            isClass: false,
-          }),
+          type: RecordType,
         };
       let name: string = type.name;
       if (isTemplateInstance(type)) {
@@ -188,7 +191,7 @@ export function getCSharpType(
       return {
         type: new CSharpType({
           name: ensureCSharpIdentifier(program, type, name, NameCasingType.Class),
-          namespace: `${namespace}.Models`,
+          namespace: `${namespace}`,
           isBuiltIn: false,
           isValueType: false,
           isClass: true,
@@ -994,11 +997,9 @@ export interface EmittedTypeInfo {
 export class CSharpOperationHelpers {
   constructor(inEmitter: AssetEmitter<string, CSharpServiceEmitterOptions>) {
     this.emitter = inEmitter;
-    this.#anonymousModels = new Map<Model, EmittedTypeInfo>();
     this.#opCache = new Map<Operation, CSharpOperationParameter[]>();
   }
   emitter: AssetEmitter<string, CSharpServiceEmitterOptions>;
-  #anonymousModels: Map<Model, EmittedTypeInfo>;
   #opCache: Map<Operation, CSharpOperationParameter[]>;
   getParameters(program: Program, operation: HttpOperation): CSharpOperationParameter[] {
     function safeConcat(...names: (string | undefined)[]): string {
@@ -1012,7 +1013,7 @@ export class CSharpOperationHelpers {
     const bodyParam = operation.parameters.body;
     const isExplicitBodyParam: boolean = bodyParam?.property !== undefined;
     const result: CSharpOperationParameter[] = [];
-    if (operation.verb === "get" && operation.parameters.body !== undefined) {
+    if (!cached && operation.verb === "get" && operation.parameters.body !== undefined) {
       reportDiagnostic(program, {
         code: "get-request-body",
         target: operation.operation,
@@ -1232,7 +1233,6 @@ export class CSharpOperationHelpers {
       });
     }
 
-    this.#opCache.set(operation.operation, result);
     return result;
   }
   getTypeInfo(program: Program, tsType: Type): EmittedTypeInfo {
@@ -1308,19 +1308,19 @@ export class CSharpOperationHelpers {
           defaults.push(itemDefault);
         }
         return {
-          typeReference: code`${csharpType.getTypeReference()}[]`,
+          typeReference: code`${csharpType.getTypeReference(myEmitter.getContext().scope)}[]`,
           defaultValue: `[${defaults.join(", ")}]`,
           nullableType: csharpType.isNullable,
         };
       case "Model":
         let modelResult: EmittedTypeInfo;
-        const cachedResult = this.#anonymousModels.get(tsType);
-        if (cachedResult) {
-          return cachedResult;
-        }
+        // const cachedResult = this.#anonymousModels.get(tsType);
+        // if (cachedResult) {
+        //   return cachedResult;
+        // }
         if (isRecord(tsType)) {
           modelResult = {
-            typeReference: code`System.Text.Json.Nodes.JsonObject`,
+            typeReference: code`${RecordType.getTypeReference(myEmitter.getContext().scope)}`,
             nullableType: false,
           };
         } else {
@@ -1329,7 +1329,7 @@ export class CSharpOperationHelpers {
             nullableType: false,
           };
         }
-        this.#anonymousModels.set(tsType, modelResult);
+        //this.#anonymousModels.set(tsType, modelResult);
         return modelResult;
       case "ModelProperty":
         return this.getTypeInfo(program, tsType.type);
@@ -1587,5 +1587,19 @@ export function getStatusCode(program: Program, model: Model) {
       };
     default:
       return { value: getMinValue(program, statusCodeProperty) ?? `default` };
+  }
+}
+export function getImports(scope?: Scope<string>, visited?: Set<Scope<string>>): string[] {
+  if (scope === undefined) return [];
+  if (!visited) visited = new Set<Scope<string>>();
+  if (visited.has(scope)) return [];
+  visited.add(scope);
+  switch (scope.kind) {
+    case "namespace":
+      return getImports(scope.parentScope, visited);
+    case "sourceFile":
+      return [...scope.sourceFile.imports.keys()];
+    default:
+      return [];
   }
 }
